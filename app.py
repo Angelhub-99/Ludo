@@ -333,3 +333,100 @@ elif st.session_state.game_state == 'playing':
         st.metric("📊 Score", st.session_state.score)
     
     with col3:
+        st.metric("🏆 High Score", st.session_state.high_score)
+    
+    with col4:
+        if st.button("🔄 Reset Game", use_container_width=True):
+            st.session_state.game_state = 'menu'
+            st.rerun()
+    
+    # Game status
+    st.info(f"🎮 **Game Active** - Bird Height: {int(st.session_state.bird_y)} | Velocity: {st.session_state.bird_velocity:.1f}")
+    
+    # Update game logic
+    update_bird()
+    update_pipes()
+    check_collisions()
+    
+    # Display game
+    fig = create_game_visual()
+    st.plotly_chart(fig, use_container_width=True, key=f"game_{st.session_state.frame_count}")
+    
+    # Game tips
+    st.markdown("💡 **Tip**: Click FLAP to make the golden bird jump up! Watch it fall and time your clicks to pass through the green pipe gaps.")
+    
+    # Auto-refresh for continuous gameplay
+    if st.session_state.game_state == 'playing':
+        st.session_state.frame_count += 1
+        time.sleep(0.05)  # Faster refresh for smoother gameplay
+        st.rerun()
+
+elif st.session_state.game_state == 'game_over':
+    st.error("💥 GAME OVER! The bird crashed!")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("🎯 Final Score", st.session_state.score)
+    with col2:
+        st.metric("🏆 High Score", st.session_state.high_score)
+    
+    if st.session_state.score == st.session_state.high_score and st.session_state.score > 0:
+        st.success("🏆 NEW HIGH SCORE! Congratulations!")
+        st.balloons()
+    
+    # Show final game state with crashed bird
+    fig = create_game_visual()
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("🔍 **Can you see the bird?** Look for the golden/yellow circle with eyes and an orange beak!")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔄 PLAY AGAIN", type="primary", use_container_width=True):
+            reset_game()
+            st.rerun()
+    
+    with col2:
+        if st.button("🏠 MAIN MENU", use_container_width=True):
+            st.session_state.game_state = 'menu'
+            st.rerun()
+
+# Debug information
+with st.expander("🔧 Game Debug Info (Check if bird is working)"):
+    st.write(f"**Bird Position**: X={BIRD_X}, Y={st.session_state.bird_y}")
+    st.write(f"**Bird Velocity**: {st.session_state.bird_velocity}")
+    st.write(f"**Number of Pipes**: {len(st.session_state.pipes)}")
+    st.write(f"**Game State**: {st.session_state.game_state}")
+    st.write(f"**Frame Count**: {st.session_state.frame_count}")
+
+# Game instructions
+with st.expander("📖 Detailed Game Guide"):
+    st.markdown("""
+    ### 🐦 Bird Appearance
+    The bird consists of:
+    - **Main Body**: Large golden/yellow circle
+    - **Eye**: White circle with black pupil
+    - **Beak**: Orange triangular shape pointing right
+    - **Position**: Always at X=150, Y varies based on your clicks
+    
+    ### 🎮 Gameplay Mechanics
+    - **Gravity**: Bird constantly falls downward (velocity increases)
+    - **Flapping**: Click FLAP to give upward momentum
+    - **Physics**: Realistic momentum and gravity simulation
+    - **Collision**: Game ends if bird touches pipes or ground
+    
+    ### 🏆 Scoring System
+    - **1 Point**: For each pipe successfully passed
+    - **High Score**: Automatically saved during session
+    - **Challenge**: Try to beat your personal best!
+    
+    ### 💡 Pro Tips
+    - Don't spam the FLAP button - use controlled, timed clicks
+    - Watch the bird's velocity indicator to predict movement
+    - Aim for the center of pipe gaps for safety margin
+    - Stay calm and develop a rhythm
+    """)
+
+# Footer
+st.markdown("---")
+st.markdown("*🐦 Fixed Flappy Bird Game • Bird is now fully visible! • Built with Streamlit 🚀*")
